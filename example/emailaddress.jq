@@ -1,4 +1,4 @@
-# JQ filter: press <CR> in normal mode to execute.
+# JQ filter example.
 
 [
   .employees[]

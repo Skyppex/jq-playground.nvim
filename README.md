@@ -59,7 +59,6 @@ All possible configuration and the default values can be found in
     filetype = "jq",
     name = "jq query editor",
   },
-  disable_default_keymap = false,
 }
 ```
 
@@ -78,34 +77,28 @@ All possible configuration and the default values can be found in
   - `>1`: absolute width/height in number of characters or lines
 - `scratch`: if the buffer should be a [scratch
   buffer](https://neovim.io/doc/user/windows.html#scratch-buffer).
-- `disable_default_keymap`: disables default `<CR>` map in the query window
 
-There are two commands that can be remapped: the user-command `:JqPlayground`
-that starts the playground, and `<Plug>(JqPlaygroundRunQuery)`, that runs the
-current query when pressed with the cursor in the query window. Remap them the
-following way:
+Lua helpers are exposed for direct use:
 
 ```lua
--- start the playground
-vim.keymap.set("n", "<leader>jq", vim.cmd.JqPlayground)
-
--- when in the query window, run the jq query
-vim.keymap.set("n", "R", "<Plug>(JqPlaygroundRunQuery)")
+require("jq-playground").open()
+require("jq-playground").run_query()
 ```
+
+Both helpers accept an optional filename argument.
 
 ## Usage
 
-Navigate to a JSON file, and execute the command `:JqPlayground`. Two
+Navigate to a JSON file, and call `require("jq-playground").open()`. Two
 buffers will be opened: a buffer for the JQ-filter and one for displaying the
-results. Simply press `<CR>` (enter), or your keymap from setup, in the query
-window to refresh the results buffer.
+results. Run `require("jq-playground").run_query()` from the query window to
+refresh the results buffer.
 
-You can also provide a filename to the `:JqPlayground` command. This is useful
-if the JSON file is very large and you don't want to open it in Neovim
-directly:
+You can also provide a filename to `open()` if the JSON file is very large and
+you don't want to open it in Neovim directly:
 
-```vim
-:JqPlayground example.json
+```lua
+require("jq-playground").open("example.json")
 ```
 
 ## Buffer Variables

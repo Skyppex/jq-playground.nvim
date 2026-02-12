@@ -18,7 +18,6 @@ M.default_config = {
     filetype = "jq",
     name = "query editor",
   },
-  disable_default_keymap = false,
 }
 
 M.config = vim.deepcopy(M.default_config)

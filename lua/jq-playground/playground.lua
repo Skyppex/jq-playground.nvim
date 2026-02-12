@@ -1,6 +1,4 @@
 local M = {}
-local ns = vim.api.nvim_create_namespace("jq-playground")
-local augroup = vim.api.nvim_create_augroup("jq-playground", {})
 
 local function show_error(msg)
   vim.notify("jq-playground: " .. msg, vim.log.levels.ERROR, {})
@@ -65,6 +63,30 @@ local function run_query(cmd, input, query_buf, output_buf)
   end
 end
 
+function M.run_query(input)
+  local cfg = require("jq-playground.config").config
+  local query_buf = vim.api.nvim_get_current_buf()
+  if not vim.api.nvim_buf_is_valid(query_buf) then
+    show_error("invalid query buffer")
+    return
+  end
+
+  local output_buf = vim.b[query_buf].jqplayground_outputbuf
+  local resolved_input = input or vim.b[query_buf].jqplayground_input
+
+  if not (output_buf and vim.api.nvim_buf_is_valid(output_buf)) then
+    show_error("missing output buffer; start with :JqPlayground")
+    return
+  end
+
+  if resolved_input == nil then
+    show_error("missing input buffer; start with :JqPlayground")
+    return
+  end
+
+  run_query(cfg.cmd, resolved_input, query_buf, output_buf)
+end
+
 local function resolve_winsize(num, max)
   if num == nil or (1 <= num and num <= max) then
     return num
@@ -102,21 +124,6 @@ local function create_split_buf(opts, before_filetype_callback)
   return buf, winid
 end
 
-local function virt_text_hint(buf, hint)
-  vim.api.nvim_buf_set_extmark(buf, ns, 0, 0, {
-    virt_text = { { hint, "Conceal" } },
-  })
-
-  -- Delete hint about running the query as soon as the user does something
-  vim.api.nvim_create_autocmd({ "TextChanged", "InsertEnter" }, {
-    once = true,
-    group = augroup,
-    buffer = buf,
-    callback = function()
-      vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-    end,
-  })
-end
 
 function M.init_playground(filename)
   local cfg = require('jq-playground.config').config
@@ -136,25 +143,11 @@ function M.init_playground(filename)
   vim.api.nvim_buf_set_lines(output_buf, 0, -1, false, {})
 
   -- And then query buffer
-  local query_buf, _ = create_split_buf(cfg.query_window, function(new_buf)
+  create_split_buf(cfg.query_window, function(new_buf)
     vim.b[new_buf].jqplayground_inputbuf = curbuf
+    vim.b[new_buf].jqplayground_input = filename or curbuf
+    vim.b[new_buf].jqplayground_outputbuf = output_buf
   end)
-  virt_text_hint(query_buf, "Run your query with <CR>.")
-
-  vim.keymap.set({ "n", "i" }, "<Plug>(JqPlaygroundRunQuery)", function()
-    run_query(cfg.cmd, filename or curbuf, query_buf, output_buf)
-  end, {
-    buffer = query_buf,
-    silent = true,
-    desc = "JqPlaygroundRunQuery",
-  })
-
-  -- To have a sensible default. Does not require user to define one
-  if not cfg.disable_default_keymap then
-    vim.keymap.set({ "n" }, "<CR>", "<Plug>(JqPlaygroundRunQuery)", {
-      desc = "Default for JqPlaygroundRunQuery",
-    })
-  end
 end
 
 return M

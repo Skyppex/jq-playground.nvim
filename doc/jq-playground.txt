@@ -31,7 +31,6 @@ default values: >lua
 	filetype = 'jq',
 	name = 'jq query editor',
       },
-      disable_default_keymap = false,
     }
   })
 <
@@ -50,21 +49,14 @@ default values: >lua
   • `0-1`: percentage of current width/height
   • `>1`: absolute width/height in number of characters or lines
 • `scratch`: if the buffer should be a |scratch-buffer|.
-• `disable_default_keymap`: disables default `<CR>` map in the query window
 
 Open Playground ~
-				      *:JqPlayground* *jq-playground-command*
-Start the playground with `:JqPlayground`. The current buffer is used as input
-file, unless a filename is provided, e.g. `:JqPlayground file.json`.
+Start the playground with `require('jq-playground').open()`. The current buffer
+is used as input file, unless a filename is provided, e.g.
+`require('jq-playground').open('file.json')`.
 
 Run Query ~
-			     *JqPlaygroundRunQuery* *jq-playground-run-query*
-The query is ran by the buffer-local |<Plug>| mapping
-`<Plug>(JqPlaygroundRunQuery)`. The default is <CR> in normal mode. To remap
-it: >lua
-
-  vim.keymap.set('n', 'R', '<Plug>(JqPlaygroundRunQuery)')
-<
+Run the query with `require('jq-playground').run_query()`.
 
 Buffer Variables ~
 						     *b:jqplayground_inputbuf*
