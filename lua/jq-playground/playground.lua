@@ -22,19 +22,16 @@ end
 
 local function input_args(input)
   if type(input) == "string" and vim.fn.filereadable(input) == 1 then
+    local buf = vim.fn.bufnr(input)
+    if buf ~= -1 and vim.api.nvim_buf_is_valid(buf) then
+      return nil, vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    end
+
     return input, nil
   end
 
   if type(input) == "number" and vim.api.nvim_buf_is_valid(input) then
-    local modified = vim.bo[input].modified
-    local fname = vim.api.nvim_buf_get_name(input)
-
-    if (not modified) and fname ~= "" then
-      -- the following should be faster as it lets jq read the file contents
-      return fname, nil
-    else
-      return nil, vim.api.nvim_buf_get_lines(input, 0, -1, false)
-    end
+    return nil, vim.api.nvim_buf_get_lines(input, 0, -1, false)
   end
 
   show_error("invalid input: " .. input)
